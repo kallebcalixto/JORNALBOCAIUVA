@@ -109,7 +109,18 @@
     import { getFirestore, collection, query, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-    const firebaseConfig = { apiKey: "AIzaSyAGdlkrOftGtg5RaTVVF-enXzE4uQaYoLM", authDomain: "jornal-automatico.firebaseapp.com", projectId: "jornal-automatico" };
+    // CONFIGURAÇÃO ATUALIZADA: JORNAL BOCAIUVA
+    const firebaseConfig = {
+        apiKey: "AIzaSyCjxNFoqm4n_zdVo7HaBHwOrUTEmoFtKck",
+        authDomain: "jornal-bocaiuva.firebaseapp.com",
+        databaseURL: "https://jornal-bocaiuva-default-rtdb.firebaseio.com",
+        projectId: "jornal-bocaiuva",
+        storageBucket: "jornal-bocaiuva.firebasestorage.app",
+        messagingSenderId: "828918382499",
+        appId: "1:828918382499:web:ba8a703fa8daa3c5a4e416",
+        measurementId: "G-MZKSBB20WW"
+    };
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
@@ -132,7 +143,6 @@
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
                 videoLive.muted = false;
                 videoLive.play().then(() => {
-                    // Quando a live começar, garante que o anúncio também rode
                     videoAnuncio.play();
                     setTimeout(goFull, 500); 
                 }).catch(() => {
@@ -158,12 +168,12 @@
 
     setupLivePlayer();
 
-    // Firebase Notícias
     let noticias = [];
     let atual = 0;
 
     signInAnonymously(auth).then(() => {
-        const ref = collection(db, 'artifacts', 'default-app-id', 'users', 'pzyclksOaGTWrl3x3swL40JECw42', 'news');
+        // Apontando para a coleção raiz 'news' do novo projeto
+        const ref = collection(db, 'news');
         onSnapshot(query(ref), (snap) => {
             const temp = [];
             snap.forEach(doc => temp.push(doc.data()));
@@ -174,6 +184,7 @@
 
     function proxima() {
         const container = document.getElementById("container-destaque");
+        if (noticias.length === 0) return;
         const n = noticias[atual];
         container.innerHTML = `
             <div class="destaque-split">
