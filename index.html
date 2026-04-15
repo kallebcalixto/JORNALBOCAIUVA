@@ -90,7 +90,7 @@
 
     <div id="container-video-gif">
         <div class="box-anuncio">
-            <video id="video-anuncio" class="video-player-gif" loop playsinline autoplay>
+            <video id="video-anuncio" class="video-player-gif" loop playsinline autoplay muted>
                 <source src="https://i.imgur.com/KR9qyea.mp4" type="video/mp4">
             </video>
         </div>
@@ -115,13 +115,13 @@
     const auth = getAuth(app);
 
     const videoLive = document.getElementById('live-player');
+    const videoAnuncio = document.getElementById('video-anuncio');
     const liveSrc = 'https://srv3.zcast.com.br/kbstv/kbstv/playlist.m3u8';
 
-    // FUNÇÃO QUE FORÇA O FULLSCREEN TOTAL
     function goFull() {
         const el = document.documentElement;
         const rfs = el.requestFullscreen || el.webkitRequestFullScreen || el.mozRequestFullScreen || el.msRequestFullscreen;
-        if (rfs) rfs.call(el).catch(err => console.log("Erro ao forçar full screen automática: ", err));
+        if (rfs) rfs.call(el).catch(err => console.log("Erro ao forçar full screen: ", err));
     }
 
     function setupLivePlayer() {
@@ -132,11 +132,15 @@
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
                 videoLive.muted = false;
                 videoLive.play().then(() => {
-                    // Tenta o Fullscreen assim que o vídeo começar
+                    // Quando a live começar, garante que o anúncio também rode
+                    videoAnuncio.play();
                     setTimeout(goFull, 500); 
                 }).catch(() => {
                     videoLive.muted = true;
-                    videoLive.play().then(goFull);
+                    videoLive.play().then(() => {
+                        videoAnuncio.play();
+                        goFull();
+                    });
                 });
             });
             hls.on(Hls.Events.ERROR, (event, data) => {
@@ -144,7 +148,11 @@
             });
         } else if (videoLive.canPlayType('application/vnd.apple.mpegurl')) {
             videoLive.src = liveSrc;
-            videoLive.oncanplay = goFull;
+            videoLive.oncanplay = () => {
+                videoLive.play();
+                videoAnuncio.play();
+                goFull();
+            };
         }
     }
 
